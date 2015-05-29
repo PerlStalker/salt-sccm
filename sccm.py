@@ -118,3 +118,44 @@ def software_updates_deployment():
     '''
     return __salt__['cmd.run']('Invoke-WmiMethod -Namespace root\CCM -Class SMS_Client -Name TriggerSchedule -ArgumentList "{00000000-0000-0000-0000-000000000108}"', shell='powershell')
 
+# sccm updates
+def update_count():
+    '''
+    Get the number of available updates from ConfigMgr
+
+    CLI Example::
+
+        salt 'os:Windows' sccm.update_count
+    '''
+    return __salt__['cmd.run']('($updates | measure-object).Count'), shell='powershell')
+
+def list_updates():
+    '''
+    Get the list of available updates
+
+    CLI Example::
+
+        salt 'os:Windows' sccm.updates
+    '''
+    return __salt__['cmd.run']('gcim -namespace root\ccm\clientsdk
+-query \'Select * from CCM_SoftwareUpdate\'', shell="powershell")
+
+def install_updates():
+    '''
+    Install updates with deadlines
+
+    CLI Example::
+
+        salt 'os:Windows' sccm.install_updates
+    '''
+    return __salt__['cmd.run']('iwmi -namespace root\ccm\clientsdk -Class CCM_SoftwareUpdatesManager -name InstallUpdates([System.Management.MangementObject[]](gwmi -namespace root\ccm\clientsdk -query \'Select * from CCM_SoftwareUpdate\'))', shell='powershell')
+
+def reboot_pending():
+    '''
+    Is a reboot pending from ConfigMgr
+
+    CLI Example::
+
+        salt 'os:Windows' sccm.reboot_pending
+    '''
+    return __salt__['cmd.run']('(icim -namespace root\ccm\clientsdk -ClassName CCM_ClientUtilities -Name DetermineIfRebootPending).RebootPending', shell='powershell')
